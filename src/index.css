@@ -1,19 +1,24 @@
 :root {
-  --bg: #111418; --card: #1b2027; --line: #2c333d; --text: #e8ebef; --muted: #8b95a3; --accent: #f59e0b; --danger: #ef4444;
-  color-scheme: dark; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  /* Palette : modifier ces variables suffit pour changer le thème du site */
+  /* Thème « Mur » : jaune et bleu acier, comme le spray wall */
+  --bg: #151a21; --card: #1f2732; --line: #33404f; --text: #eef2f6; --muted: #93a1b3;
+  --accent: #f2c200; --on-accent: #151a21; --danger: #ef4444;
+  --header: #5b7896; --field: #121820; --btn: #2b3746;
+  --banner-bg: #3b2f0b; --banner-text: #fcd34d;
+  color-scheme: dark; accent-color: var(--accent); font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); -webkit-tap-highlight-color: transparent; }
 a { color: var(--accent); text-decoration: none; }
 h1, h2, h3 { margin: 0 0 .4em; } h2 { font-size: 1.25rem; } h3 { font-size: 1.05rem; }
 p { margin: .3em 0; }
-header { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: #0b0d10ee; border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
+header { position: sticky; top: 0; z-index: 10; display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--header); border-bottom: 1px solid var(--line); backdrop-filter: blur(6px); }
 header nav { display: flex; gap: 8px; }
 header nav a { color: var(--text); padding: 6px 10px; border-radius: 8px; background: var(--card); }
-header nav a.on { background: var(--accent); color: #111; }
+header nav a.on { background: var(--accent); color: var(--on-accent); }
 .brand { color: var(--text); font-weight: 700; }
 main { max-width: 760px; margin: 0 auto; padding: 12px 16px 40px; }
-.banner { background: #3b2f0b; color: #fcd34d; font-size: .85rem; padding: 6px 16px; text-align: center; }
+.banner { background: var(--banner-bg); color: var(--banner-text); font-size: .85rem; padding: 6px 16px; text-align: center; }
 .banner.err { background: #3b0b0b; color: #fca5a5; }
 .card { display: block; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; color: var(--text); }
 .stack { display: flex; flex-direction: column; gap: 12px; }
@@ -23,16 +28,16 @@ main { max-width: 760px; margin: 0 auto; padding: 12px 16px 40px; }
 .muted { color: var(--muted); } .small { font-size: .85rem; } .center { text-align: center; }
 label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--muted); flex: 1; }
 label.check { flex-direction: row; align-items: center; }
-input, select, textarea, button, .btn { font: inherit; color: var(--text); background: #0f1216; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-button, .btn { cursor: pointer; background: #262d37; }
-button.on { background: var(--accent); color: #111; border-color: var(--accent); }
+input, select, textarea, button, .btn { font: inherit; color: var(--text); background: var(--field); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+button, .btn { cursor: pointer; background: var(--btn); }
+button.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
 button:disabled { opacity: .45; cursor: default; }
-.primary { background: var(--accent); color: #111; border-color: var(--accent); font-weight: 600; }
+.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
 .danger { background: transparent; color: var(--danger); border-color: var(--danger); }
 .link { background: none; border: none; color: var(--muted); padding: 0 4px; }
 .big { padding: 14px; font-size: 1.05rem; }
 .login { max-width: 360px; margin: 15vh auto; display: flex; flex-direction: column; gap: 12px; }
-.grade { display: inline-block; min-width: 3em; text-align: center; background: var(--accent); color: #111; font-weight: 700; border-radius: 8px; padding: 4px 6px; }
+.grade { display: inline-block; min-width: 3em; text-align: center; background: var(--accent); color: var(--on-accent); font-weight: 700; border-radius: 8px; padding: 4px 6px; }
 .grade.sm { min-width: 2.6em; padding: 1px 4px; font-size: .85rem; }
 .problem-row { display: flex; align-items: center; gap: 12px; }
 .problem-row small { display: block; }
