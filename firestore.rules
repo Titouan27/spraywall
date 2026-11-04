@@ -1,9 +1,22 @@
 rules_version = '2';
-// Accès réservé aux visiteurs du site (connexion anonyme automatique).
+// Base de blocs communautaire : pas d'authentification, tout le monde peut lire, créer, modifier et supprimer.
+// Les règles vérifient seulement que les blocs ont le bon format (protège contre les données farfelues).
 service cloud.firestore {
-  match /databases/{db}/documents {
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+  match /databases/{database}/documents {
+    match /problems/{id} {
+      allow read, delete: if true;
+      allow create, update: if isValidProblem(request.resource.data, id);
     }
+    function isValidProblem(p, id) {
+      return p.keys().hasOnly(['id', 'name', 'grade', 'description', 'author', 'circles', 'createdAt', 'updatedAt'])
+        && p.id == id
+        && p.name is string && p.name.size() > 0 && p.name.size() <= 60
+        && p.grade is string && p.grade.size() <= 4
+        && p.description is string && p.description.size() <= 1000
+        && p.author is string && p.author.size() > 0 && p.author.size() <= 30
+        && p.circles is list && p.circles.size() > 0 && p.circles.size() <= 150
+        && p.createdAt is int && p.updatedAt is int;
+    }
+    // tout le reste est interdit
   }
 }

@@ -1,28 +1,18 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useStore } from '../store'
-import { GRADES, consensusGrade, gradeIndex } from '../grades'
+import { GRADES, gradeIndex } from '../grades'
 
-export default function ProblemList({ user }: { user: string }) {
-  const { problems, ascents, holds } = useStore()
+export default function ProblemList() {
+  const { problems } = useStore()
   const [q, setQ] = useState('')
   const [min, setMin] = useState(GRADES[0])
   const [max, setMax] = useState(GRADES[GRADES.length - 1])
-  const [sort, setSort] = useState<'recent' | 'popular' | 'grade'>('recent')
-  const [hideDone, setHideDone] = useState(false)
+  const [sort, setSort] = useState<'recent' | 'grade'>('recent')
 
-  const rows = useMemo(() => problems.map(p => {
-    const asc = ascents.filter(a => a.problemId === p.id)
-    const stars = asc.length ? asc.reduce((s, a) => s + a.stars, 0) / asc.length : 0
-    return { p, asc, stars, grade: consensusGrade(p.grade, asc.map(a => a.grade)), done: asc.some(a => a.user === user) }
-  }), [problems, ascents, user])
-
-  const list = rows
-    .filter(r => gradeIndex(r.grade) >= gradeIndex(min) && gradeIndex(r.grade) <= gradeIndex(max))
-    .filter(r => !hideDone || !r.done)
-    .filter(r => !q || (r.p.name + ' ' + r.p.author).toLowerCase().includes(q.toLowerCase()))
-    .sort((a, b) => sort === 'recent' ? b.p.createdAt - a.p.createdAt
-      : sort === 'popular' ? b.asc.length - a.asc.length || b.stars - a.stars
-        : gradeIndex(a.grade) - gradeIndex(b.grade))
+  const list = problems
+    .filter(p => gradeIndex(p.grade) >= gradeIndex(min) && gradeIndex(p.grade) <= gradeIndex(max))
+    .filter(p => !q || (p.name + ' ' + p.author).toLowerCase().includes(q.toLowerCase()))
+    .sort((a, b) => sort === 'recent' ? b.createdAt - a.createdAt : gradeIndex(a.grade) - gradeIndex(b.grade))
 
   return (
     <div className="stack">
@@ -33,21 +23,17 @@ export default function ProblemList({ user }: { user: string }) {
           <span className="muted">à</span>
           <select value={max} onChange={e => setMax(e.target.value)}>{GRADES.map(g => <option key={g}>{g}</option>)}</select>
           <select value={sort} onChange={e => setSort(e.target.value as typeof sort)}>
-            <option value="recent">Récents</option><option value="popular">Populaires</option><option value="grade">Cotation</option>
+            <option value="recent">Récents</option><option value="grade">Cotation</option>
           </select>
         </div>
-        <label className="check"><input type="checkbox" checked={hideDone} onChange={e => setHideDone(e.target.checked)} /> Masquer mes blocs réussis</label>
       </div>
-      {!holds.length && <p className="card center">👋 Première étape : <a href="#/holds">placer les prises sur le mur</a>.</p>}
       {!problems.length && <p className="muted center">Aucun bloc pour l'instant. <a href="#/new">Crée le premier !</a></p>}
       {problems.length > 0 && !list.length && <p className="muted center">Aucun bloc ne correspond aux filtres.</p>}
-      {list.map(r => (
-        <a key={r.p.id} href={'#/p/' + r.p.id} className="card problem-row">
-          <span className="grade">{r.grade}</span>
-          <span className="grow">
-            <span><strong>{r.p.name}</strong>{r.done && <span className="done"> ✓</span>}</span>
-            <small className="muted">par {r.p.author} · {r.asc.length} croix{r.stars > 0 && ' · ' + '★'.repeat(Math.round(r.stars))}</small>
-          </span>
+      <p className="muted small">{list.length} bloc{list.length > 1 ? 's' : ''}</p>
+      {list.map(p => (
+        <a key={p.id} href={'#/p/' + p.id} className="card problem-row">
+          <span className="grade">{p.grade}</span>
+          <span className="grow"><strong>{p.name}</strong><small className="muted">par {p.author}</small></span>
           <span className="muted">›</span>
         </a>
       ))}

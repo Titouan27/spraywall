@@ -36,29 +36,23 @@ button:disabled { opacity: .45; cursor: default; }
 .grade.sm { min-width: 2.6em; padding: 1px 4px; font-size: .85rem; }
 .problem-row { display: flex; align-items: center; gap: 12px; }
 .problem-row small { display: block; }
-.done { color: #22c55e; }
 .filters { display: flex; flex-direction: column; gap: 8px; }
 .filters select { flex: 1; }
 .desc { white-space: pre-wrap; }
-.warn { color: #fcd34d; }
 .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .8rem; color: var(--muted); margin-top: 6px; }
 .legend i { display: inline-block; width: 12px; height: 12px; border: 3px solid; border-radius: 50%; margin-right: 4px; vertical-align: -2px; }
-.stars button { background: none; border: none; font-size: 1.5rem; color: #4b5563; padding: 0 2px; }
-.stars button.on { color: var(--accent); }
-.ascent { display: block; padding: 8px 0; border-top: 1px solid var(--line); color: var(--text); }
 .role-btn { border-color: var(--c); }
 .role-btn.on { background: var(--c); color: #111; border-color: var(--c); }
 .toolbar { display: flex; flex-direction: column; gap: 8px; position: sticky; top: 52px; z-index: 5; }
-.pyramid { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
-.bar-row { display: flex; gap: 8px; align-items: center; }
-.bar { background: var(--accent); color: #111; font-size: .75rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; min-width: 22px; }
 
 /* Mur */
 .wall { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #000; touch-action: none; }
 .wall-inner { position: relative; width: 100%; }
 .wall-inner img { display: block; width: 100%; height: auto; user-select: none; }
 .wall-inner svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.hold { fill: #ffffff10; stroke: #00e5ff; stroke-width: 4; cursor: pointer; filter: drop-shadow(0 0 2px #000); }
-.hold.role { stroke-width: 9; fill: #ffffff10; }
-.hold.sel { stroke: #ff00ff; stroke-width: 7; fill: #ff00ff40; }
+.hold { fill: #ffffff14; stroke-width: 7; cursor: pointer; filter: drop-shadow(0 0 2px #000); }
+.hold.sel { fill: #ffffff55; stroke-width: 10; }
 .hint { min-height: 64px; flex-wrap: nowrap; }
+.hint { min-height: 64px; flex-wrap: nowrap; }
+.roles button { flex: 1; }
+header nav .user { color: var(--text); background: var(--card); padding: 6px 10px; border-radius: 8px; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
