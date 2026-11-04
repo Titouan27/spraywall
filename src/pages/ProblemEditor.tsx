@@ -15,6 +15,7 @@ export default function ProblemEditor({ user, id }: { user: string; id?: string 
   const [grade, setGrade] = useState(existing?.grade ?? '6A')
   const [description, setDescription] = useState(existing?.description ?? '')
   if (id && !existing) return <p className="muted center">Bloc introuvable.</p>
+  if (!holds.length) return <p className="muted center card">Aucune prise n'est encore placée sur le mur. <a href="#/holds">Placer les prises</a></p>
 
   const count = (r: Role) => Object.values(roles).filter(x => x === r).length
   function tap(h: string) {

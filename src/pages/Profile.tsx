@@ -33,7 +33,7 @@ export default function Profile({ user, onLogout }: { user: string; onLogout: ()
         {mine.map(a => <a key={a.id} href={'#/p/' + a.problemId} className="ascent row between"><span><span className="grade sm">{a.grade}</span> {pname(a.problemId)} {a.flash && '⚡'}</span><span className="muted">{new Date(a.date).toLocaleDateString('fr-FR')}</span></a>)}
       </div>
       {created.length > 0 && <div className="card"><h3>Mes ouvertures</h3>{created.map(p => <a key={p.id} href={'#/p/' + p.id} className="ascent row"><span className="grade sm">{p.grade}</span> {p.name}</a>)}</div>}
-      <a className="muted small center" href="#/holds">⚙️ Éditeur des prises du mur</a>
+      <a className="muted small center" href="#/holds">⚙️ Placer / modifier les prises du mur</a>
     </div>
   )
 }

@@ -6,11 +6,8 @@ import {
 } from 'firebase/firestore'
 import { firebaseConfig } from './config'
 import type { Ascent, Hold, Problem } from './types'
-import initialHolds from './initialHolds.json'
 
 interface State { holds: Hold[]; problems: Problem[]; ascents: Ascent[]; ready: boolean; error?: string }
-
-const seedHolds: Hold[] = (initialHolds as number[][][]).map((poly, i) => ({ id: 'h' + i, pts: poly.flat() }))
 
 let state: State = { holds: [], problems: [], ascents: [], ready: false }
 const listeners = new Set<() => void>()
@@ -31,8 +28,7 @@ if (firebaseConfig) {
     const got = new Set<string>()
     const mark = (k: string) => { got.add(k); if (got.size === 3) set({ ready: true }) }
     onSnapshot(doc(db!, 'walls', 'main'), s => {
-      if (!s.exists()) { setDoc(s.ref, { holds: seedHolds }); return }
-      set({ holds: s.data().holds as Hold[] }); mark('h')
+      set({ holds: (s.data()?.holds ?? []) as Hold[] }); mark('h')
     }, fail)
     onSnapshot(collection(db!, 'problems'), s => { set({ problems: s.docs.map(d => d.data() as Problem) }); mark('p') }, fail)
     onSnapshot(collection(db!, 'ascents'), s => { set({ ascents: s.docs.map(d => d.data() as Ascent) }); mark('a') }, fail)
@@ -40,7 +36,7 @@ if (firebaseConfig) {
 } else {
   // ---------- Mode démo : localStorage ----------
   const load = <T,>(k: string, def: T): T => { try { const v = localStorage.getItem('sw_' + k); return v ? JSON.parse(v) : def } catch { return def } }
-  set({ holds: load('holds', seedHolds), problems: load('problems', []), ascents: load('ascents', []), ready: true })
+  set({ holds: load('holds', []), problems: load('problems', []), ascents: load('ascents', []), ready: true })
 }
 function persistLocal() {
   try { (['holds', 'problems', 'ascents'] as const).forEach(k => localStorage.setItem('sw_' + k, JSON.stringify(state[k]))) } catch { /* ignore */ }

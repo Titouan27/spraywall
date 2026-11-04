@@ -3,7 +3,7 @@ import { useStore } from '../store'
 import { GRADES, consensusGrade, gradeIndex } from '../grades'
 
 export default function ProblemList({ user }: { user: string }) {
-  const { problems, ascents } = useStore()
+  const { problems, ascents, holds } = useStore()
   const [q, setQ] = useState('')
   const [min, setMin] = useState(GRADES[0])
   const [max, setMax] = useState(GRADES[GRADES.length - 1])
@@ -38,6 +38,7 @@ export default function ProblemList({ user }: { user: string }) {
         </div>
         <label className="check"><input type="checkbox" checked={hideDone} onChange={e => setHideDone(e.target.checked)} /> Masquer mes blocs réussis</label>
       </div>
+      {!holds.length && <p className="card center">👋 Première étape : <a href="#/holds">placer les prises sur le mur</a>.</p>}
       {!problems.length && <p className="muted center">Aucun bloc pour l'instant. <a href="#/new">Crée le premier !</a></p>}
       {problems.length > 0 && !list.length && <p className="muted center">Aucun bloc ne correspond aux filtres.</p>}
       {list.map(r => (

@@ -6,11 +6,8 @@ import type { Hold, Role } from './types'
 export const ROLE_COLOR: Record<Role, string> = { start: '#22c55e', hand: '#3b82f6', foot: '#facc15', finish: '#ef4444' }
 export const ROLE_LABEL: Record<Role, string> = { start: 'Départ', hand: 'Main', foot: 'Pied', finish: 'Top' }
 
-export const toPoints = (pts: number[]) => {
-  const out: string[] = []
-  for (let i = 0; i < pts.length; i += 2) out.push(`${(pts[i] * WALL_W).toFixed(1)},${(pts[i + 1] * WALL_H).toFixed(1)}`)
-  return out.join(' ')
-}
+/** Cercle SVG d'une prise, en pixels de la photo. */
+export const circ = (h: Hold) => ({ cx: h.x * WALL_W, cy: h.y * WALL_H, r: h.r * WALL_W })
 
 interface Props {
   holds: Hold[]
@@ -50,7 +47,7 @@ export default function Wall({ holds, roles = {}, mode, selected, onTapHold, onT
                 <>
                   <mask id="m">
                     <rect width={WALL_W} height={WALL_H} fill="white" />
-                    {used.map(h => <polygon key={h.id} points={toPoints(h.pts)} fill="black" stroke="black" strokeWidth={10} />)}
+                    {used.map(h => <circle key={h.id} {...circ(h)} fill="black" stroke="black" strokeWidth={14} />)}
                   </mask>
                   <rect width={WALL_W} height={WALL_H} fill="black" opacity={0.6} mask="url(#m)" />
                 </>
@@ -59,9 +56,9 @@ export default function Wall({ holds, roles = {}, mode, selected, onTapHold, onT
                 const r = roles[h.id]
                 if (mode === 'view' && !r) return null
                 return (
-                  <polygon key={h.id} data-id={h.id} points={toPoints(h.pts)}
+                  <circle key={h.id} data-id={h.id} {...circ(h)}
                     className={'hold' + (r ? ' role' : '') + (selected === h.id ? ' sel' : '')}
-                    style={r ? { stroke: ROLE_COLOR[r] } : undefined} strokeDasharray={r === 'foot' ? '10 6' : undefined} />
+                    style={r ? { stroke: ROLE_COLOR[r] } : undefined} strokeDasharray={r === 'foot' ? '12 8' : undefined} />
                 )
               })}
               {children}

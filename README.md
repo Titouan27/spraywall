@@ -7,13 +7,13 @@ Site communautaire pour notre spray wall : créer des blocs en sélectionnant le
 - **Accès** : simple pseudo, avec un code de groupe optionnel. Pas de mot de passe.
 
 ## Fonctionnalités
-- Photo du mur zoomable (pincer / molette) avec les prises cliquables
+- Photo du mur zoomable (pincer / molette) avec les prises (cercles) cliquables
 - Création de bloc : prises de **départ** (vert), **main** (bleu), **pied** (jaune, pointillés), **top** (rouge)
 - Liste des blocs : recherche, filtre de cotation, tri, masquer ses blocs réussis
 - Croix : date, nombre d'essais (flash ⚡), cotation ressentie, note ★ à ★★★, commentaire/beta
 - Cotation affichée = **médiane** des votes (cotation d'ouverture incluse)
 - Profil : carnet, pyramide de niveaux, ouvertures
-- Éditeur des prises (lien en bas de la page profil) pour corriger la détection automatique
+- Éditeur des prises (lien en bas de la page profil) : chaque prise est un cercle placé à la main (ajouter, déplacer, redimensionner, supprimer)
 
 ## Développement
 ```bash
@@ -36,10 +36,10 @@ Sans configuration Firebase, le site tourne en **mode démo** (données stockée
    - Le site est publié à chaque push sur `https://<pseudo>.github.io/<depot>/`
 3. (Optionnel) Dans `src/config.ts`, définir `GROUP_CODE` pour demander un code à l'entrée.
 
+## Placer les prises
+Au premier lancement le mur est vide : ouvrir **Profil > Placer / modifier les prises du mur**.
+- **Ajouter** : régler la taille, puis toucher le centre de chaque prise (zoomer pour être précis). « ↶ Annuler » retire le dernier cercle.
+- **Modifier** : toucher un cercle pour le sélectionner, puis toucher le mur pour le déplacer, ou régler sa taille avec le curseur. Supprimer une prise utilisée dans un bloc demande une confirmation.
+
 ## Changer de photo
-Remplacer `public/wall.jpg`, mettre à jour `WALL_W`/`WALL_H` dans `src/config.ts`, puis :
-```bash
-pip install opencv-python-headless numpy
-python3 tools/detect_holds.py   # adapter le contour du mur dans le script
-```
-⚠️ La liste initiale ne sert qu'au premier lancement : une fois Firestore initialisé, les prises se modifient via l'éditeur.
+Remplacer `public/wall.jpg` et mettre à jour `WALL_W` / `WALL_H` dans `src/config.ts`. Les positions des prises sont relatives à la photo : il faudra les replacer si le cadrage change.

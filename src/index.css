@@ -58,8 +58,7 @@ button:disabled { opacity: .45; cursor: default; }
 .wall-inner { position: relative; width: 100%; }
 .wall-inner img { display: block; width: 100%; height: auto; user-select: none; }
 .wall-inner svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-.hold { fill: transparent; stroke: #ffffffaa; stroke-width: 2.5; cursor: pointer; }
+.hold { fill: #ffffff10; stroke: #00e5ff; stroke-width: 4; cursor: pointer; filter: drop-shadow(0 0 2px #000); }
 .hold.role { stroke-width: 9; fill: #ffffff10; }
-.hold.sel { stroke: #f0f; stroke-width: 6; fill: #ff00ff30; }
-.draft { fill: #ff00ff30; stroke: #f0f; stroke-width: 3; }
-.draft-pt { fill: #f0f; }
+.hold.sel { stroke: #ff00ff; stroke-width: 7; fill: #ff00ff40; }
+.hint { min-height: 64px; flex-wrap: nowrap; }

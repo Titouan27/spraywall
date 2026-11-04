@@ -1,5 +1,5 @@
-/** Coordonnées des prises : liste plate [x0,y0,x1,y1,...] normalisée entre 0 et 1 (Firestore n'accepte pas les tableaux imbriqués). */
-export interface Hold { id: string; pts: number[] }
+/** Prise = cercle. x, y : position normalisée (0–1) sur la photo ; r : rayon en fraction de la largeur de la photo. */
+export interface Hold { id: string; x: number; y: number; r: number }
 export type Role = 'start' | 'hand' | 'foot' | 'finish'
 export interface Problem {
   id: string
