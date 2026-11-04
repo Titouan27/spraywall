@@ -44,7 +44,7 @@ export default function ProblemList({ user }: { user: string }) {
         <a key={r.p.id} href={'#/p/' + r.p.id} className="card problem-row">
           <span className="grade">{r.grade}</span>
           <span className="grow">
-            <strong>{r.p.name}</strong>{r.done && <span className="done"> ✓</span>}
+            <span><strong>{r.p.name}</strong>{r.done && <span className="done"> ✓</span>}</span>
             <small className="muted">par {r.p.author} · {r.asc.length} croix{r.stars > 0 && ' · ' + '★'.repeat(Math.round(r.stars))}</small>
           </span>
           <span className="muted">›</span>
