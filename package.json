@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:rules": "npx -y firebase-tools@15.34.2 emulators:exec --project demo-spraywall --only auth,firestore 'node tests/rules.test.mjs'",
+    "dev:emu": "npx -y firebase-tools@15.34.2 emulators:exec --project demo-spraywall --only auth,firestore 'VITE_EMULATOR=1 vite'"
   },
   "dependencies": {
     "firebase": "^13.2.0",

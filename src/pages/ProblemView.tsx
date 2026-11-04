@@ -1,8 +1,9 @@
 import Wall, { ROLES, ROLE_COLOR, ROLE_LABEL } from '../Wall'
-import { deleteProblem, useStore } from '../store'
+import { canEdit, deleteProblem, useStore } from '../store'
+import type { Me } from '../types'
 import Grade from '../Grade'
 
-export default function ProblemView({ id }: { id: string }) {
+export default function ProblemView({ id, me }: { id: string; me: Me | null }) {
   const { problems } = useStore()
   const p = problems.find(x => x.id === id)
   if (!p) return <p className="muted center">Bloc introuvable. <a href="#/">Retour</a></p>
@@ -17,10 +18,10 @@ export default function ProblemView({ id }: { id: string }) {
         {p.description && <p className="desc">{p.description}</p>}
         <div className="legend">{used.map(r => <span key={r}><i style={{ borderColor: ROLE_COLOR[r] }} />{ROLE_LABEL[r]}</span>)}</div>
       </div>
-      <div className="row">
+      {canEdit(p, me) && <div className="row">
         <a className="btn" href={'#/edit/' + p.id}>Modifier</a>
         <button className="danger" onClick={async () => { if (confirm(`Supprimer « ${p.name} » ?`)) { await deleteProblem(p.id); location.hash = '/' } }}>Supprimer</button>
-      </div>
+      </div>}
     </div>
   )
 }

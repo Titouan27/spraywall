@@ -68,4 +68,10 @@ button:disabled { opacity: .45; cursor: default; }
 .hint { min-height: 64px; flex-wrap: nowrap; }
 .hint { min-height: 64px; flex-wrap: nowrap; }
 .roles button { flex: 1; }
+header nav .login-btn { padding: 6px 12px; }
+.menu { position: relative; }
+.menu-pop { position: absolute; right: 0; top: calc(100% + 6px); padding: 6px; z-index: 20; white-space: nowrap; }
+.readonly { margin: 0; }
+.link.accent { color: var(--accent); padding: 0; font-weight: 600; }
+.warn { color: #fcd34d; margin: 0; }
 header nav .user { color: var(--text); background: var(--card); padding: 6px 10px; border-radius: 8px; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

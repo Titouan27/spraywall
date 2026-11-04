@@ -1,19 +1,52 @@
 rules_version = '2';
-// Base de blocs communautaire : pas d'authentification, tout le monde peut lire, créer, modifier et supprimer.
-// Les règles vérifient seulement que les blocs ont le bon format (protège contre les données farfelues).
+// Lecture : tout le monde (même sans connexion).
+// Écriture : uniquement les comptes connectés avec un pseudo, et seulement sur leurs propres blocs.
 service cloud.firestore {
   match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function uid() { return request.auth.uid; }
+    function myProfile() { return /databases/$(database)/documents/users/$(uid()); }
+    function hasName() { return signedIn() && exists(myProfile()); }
+    function myName() { return get(myProfile()).data.name; }
+
+    // ---- Pseudos : uniques et définitifs ----
+    // users/{uid} et usernames/{pseudo en minuscules} sont créés ensemble et ne peuvent plus changer.
+    match /usernames/{key} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid']) && request.resource.data.uid == uid()
+        && !exists(myProfile())
+        && getAfter(myProfile()).data.key == key;
+      allow update, delete: if false;
+    }
+    match /users/{userId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && userId == uid()
+        && request.resource.data.keys().hasOnly(['name', 'key'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 20
+        && request.resource.data.key == request.resource.data.name.lower()
+        && getAfter(/databases/$(database)/documents/usernames/$(request.resource.data.key)).data.uid == uid();
+      allow update, delete: if false;
+    }
+
+    // ---- Blocs ----
     match /problems/{id} {
-      allow read, delete: if true;
-      allow create, update: if isValidProblem(request.resource.data, id);
+      allow read: if true;
+      allow create: if hasName() && isValidProblem(request.resource.data, id)
+        && request.resource.data.authorUid == uid() && request.resource.data.author == myName();
+      allow update: if hasName() && isValidProblem(request.resource.data, id)
+        && resource.data.authorUid == uid()
+        && request.resource.data.authorUid == uid() && request.resource.data.author == myName()
+        && request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if signedIn() && resource.data.authorUid == uid();
     }
     function isValidProblem(p, id) {
-      return p.keys().hasOnly(['id', 'name', 'grade', 'description', 'author', 'circles', 'createdAt', 'updatedAt'])
+      return p.keys().hasOnly(['id', 'name', 'grade', 'description', 'author', 'authorUid', 'circles', 'createdAt', 'updatedAt'])
         && p.id == id
         && p.name is string && p.name.size() > 0 && p.name.size() <= 60
         && p.grade is string && p.grade.size() <= 4
         && p.description is string && p.description.size() <= 1000
-        && p.author is string && p.author.size() > 0 && p.author.size() <= 30
         && p.circles is list && p.circles.size() > 0 && p.circles.size() <= 150
         && p.createdAt is int && p.updatedAt is int;
     }

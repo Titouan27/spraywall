@@ -4,11 +4,11 @@ import { newId, saveProblem, useStore } from '../store'
 import { GRADES } from '../grades'
 import Grade from '../Grade'
 import { WALL_W } from '../config'
-import type { Circle, Role } from '../types'
+import type { Circle, Me, Role } from '../types'
 
 const MIN_SIZE = 6, MAX_SIZE = 90 // rayon en pixels de la photo
 
-export default function ProblemEditor({ user, id }: { user: string; id?: string }) {
+export default function ProblemEditor({ me, id }: { me: Me; id?: string }) {
   const { problems } = useStore()
   const existing = id ? problems.find(p => p.id === id) : undefined
   const [circles, setCircles] = useState<Circle[]>(existing?.circles ?? [])
@@ -23,6 +23,7 @@ export default function ProblemEditor({ user, id }: { user: string; id?: string 
   const [description, setDescription] = useState(existing?.description ?? '')
   const [saving, setSaving] = useState(false)
   if (id && !existing) return <p className="muted center">Bloc introuvable.</p>
+  if (existing && existing.authorUid !== me.uid) return <p className="muted center card">Seul l'auteur de ce bloc peut le modifier.</p>
 
   const ed = circles.find(c => c.id === editing)
   const patch = (p: Partial<Circle>) => setCircles(cs => cs.map(c => (c.id === editing ? { ...c, ...p } : c)))
@@ -54,7 +55,7 @@ export default function ProblemEditor({ user, id }: { user: string; id?: string 
   async function save() {
     setSaving(true)
     const now = Date.now()
-    const p = { id: existing?.id ?? newId(), name: name.trim(), grade, description: description.trim(), author: existing?.author ?? user, circles, createdAt: existing?.createdAt ?? now, updatedAt: now }
+    const p = { id: existing?.id ?? newId(), name: name.trim(), grade, description: description.trim(), author: me.name, authorUid: me.uid, circles, createdAt: existing?.createdAt ?? now, updatedAt: now }
     try { await saveProblem(p); location.hash = '/p/' + p.id } catch (e) { alert('Erreur : ' + (e as Error).message); setSaving(false) }
   }
 

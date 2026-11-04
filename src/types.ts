@@ -6,9 +6,14 @@ export interface Problem {
   name: string
   grade: string
   description: string
-  /** pseudo de la personne qui a créé le bloc */
+  /** pseudo de la personne qui a créé le bloc (vérifié par les règles Firestore) */
   author: string
+  /** identifiant du compte de l'auteur : seul lui peut modifier ou supprimer le bloc */
+  authorUid: string
   circles: Circle[]
   createdAt: number
   updatedAt: number
 }
+
+/** Utilisateur connecté */
+export interface Me { uid: string; name: string }

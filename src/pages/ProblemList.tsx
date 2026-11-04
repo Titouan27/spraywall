@@ -2,8 +2,10 @@ import { useState } from 'react'
 import { useStore } from '../store'
 import { GRADES, gradeIndex } from '../grades'
 import Grade from '../Grade'
+import { signIn } from '../store'
+import type { Me } from '../types'
 
-export default function ProblemList() {
+export default function ProblemList({ me }: { me: Me | null }) {
   const { problems } = useStore()
   const [q, setQ] = useState('')
   const [min, setMin] = useState(GRADES[0])
@@ -28,13 +30,14 @@ export default function ProblemList() {
           </select>
         </div>
       </div>
-      {!problems.length && <p className="muted center">Aucun bloc pour l'instant. <a href="#/new">Crée le premier !</a></p>}
+      {!me && <p className="card small muted readonly">👀 Lecture seule. <button className="link accent" onClick={signIn}>Connecte-toi</button> pour créer des blocs.</p>}
+      {!problems.length && <p className="muted center">Aucun bloc pour l'instant.{me && <> <a href="#/new">Crée le premier !</a></>}</p>}
       {problems.length > 0 && !list.length && <p className="muted center">Aucun bloc ne correspond aux filtres.</p>}
       <p className="muted small">{list.length} bloc{list.length > 1 ? 's' : ''}</p>
       {list.map(p => (
         <a key={p.id} href={'#/p/' + p.id} className="card problem-row">
           <Grade g={p.grade} />
-          <span className="grow"><strong>{p.name}</strong><small className="muted">par {p.author}</small></span>
+          <span className="grow"><strong>{p.name}</strong><small className="muted">par {p.author}{me && p.authorUid === me.uid && ' (toi)'}</small></span>
           <span className="muted">›</span>
         </a>
       ))}
