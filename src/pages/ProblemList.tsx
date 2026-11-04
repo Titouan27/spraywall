@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useStore } from '../store'
 import { GRADES, gradeIndex } from '../grades'
+import Grade from '../Grade'
 
 export default function ProblemList() {
   const { problems } = useStore()
@@ -32,7 +33,7 @@ export default function ProblemList() {
       <p className="muted small">{list.length} bloc{list.length > 1 ? 's' : ''}</p>
       {list.map(p => (
         <a key={p.id} href={'#/p/' + p.id} className="card problem-row">
-          <span className="grade">{p.grade}</span>
+          <Grade g={p.grade} />
           <span className="grow"><strong>{p.name}</strong><small className="muted">par {p.author}</small></span>
           <span className="muted">›</span>
         </a>

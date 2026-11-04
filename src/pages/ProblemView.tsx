@@ -1,5 +1,6 @@
 import Wall, { ROLES, ROLE_COLOR, ROLE_LABEL } from '../Wall'
 import { deleteProblem, useStore } from '../store'
+import Grade from '../Grade'
 
 export default function ProblemView({ id }: { id: string }) {
   const { problems } = useStore()
@@ -11,7 +12,7 @@ export default function ProblemView({ id }: { id: string }) {
     <div className="stack">
       <Wall circles={p.circles} dim />
       <div className="card">
-        <h2>{p.name} <span className="grade">{p.grade}</span></h2>
+        <h2>{p.name} <Grade g={p.grade} /></h2>
         <p className="muted">par {p.author} · {new Date(p.createdAt).toLocaleDateString('fr-FR')}</p>
         {p.description && <p className="desc">{p.description}</p>}
         <div className="legend">{used.map(r => <span key={r}><i style={{ borderColor: ROLE_COLOR[r] }} />{ROLE_LABEL[r]}</span>)}</div>
