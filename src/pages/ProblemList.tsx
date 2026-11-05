@@ -5,7 +5,7 @@ import Grade from '../Grade'
 import type { Me } from '../types'
 
 export default function ProblemList({ me }: { me: Me | null }) {
-  const { problems, ascents, projects } = useStore()
+  const { problems, ascents, projects, comments } = useStore()
   const [q, setQ] = useState('')
   const [min, setMin] = useState(GRADES[0])
   const [max, setMax] = useState(GRADES[GRADES.length - 1])
@@ -13,6 +13,7 @@ export default function ProblemList({ me }: { me: Me | null }) {
   const [hideDone, setHideDone] = useState(false)
 
   const count = (id: string) => ascents.filter(a => a.problemId === id).length
+  const nComments = (id: string) => comments.filter(c => c.problemId === id).length
   const done = new Set(me ? ascents.filter(a => a.uid === me.uid).map(a => a.problemId) : [])
   const proj = new Set(projects.map(p => p.problemId))
 
@@ -48,7 +49,7 @@ export default function ProblemList({ me }: { me: Me | null }) {
           <Grade g={p.grade} />
           <span className="grow">
             <span><strong>{p.name}</strong>{done.has(p.id) && <span className="badge done"> ✓</span>}{proj.has(p.id) && <span className="badge"> 🎯</span>}</span>
-            <small className="muted">par {p.author}{me && p.authorUid === me.uid && ' (toi)'} · {count(p.id)} ascension{count(p.id) > 1 ? 's' : ''}</small>
+            <small className="muted">par {p.author}{me && p.authorUid === me.uid && ' (toi)'} · {count(p.id)} ascension{count(p.id) > 1 ? 's' : ''}{nComments(p.id) > 0 && ` · 💬 ${nComments(p.id)}`}</small>
           </span>
           <span className="muted">›</span>
         </a>

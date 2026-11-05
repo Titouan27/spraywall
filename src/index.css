@@ -90,3 +90,7 @@ header nav .user { color: var(--text); background: var(--card); padding: 6px 10p
 .pyramid { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
 .bar-row { display: flex; gap: 8px; align-items: center; }
 .bar { font-size: .75rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; min-width: 22px; }
+.comment { padding: 10px 0; border-top: 1px solid var(--line); }
+.comment-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 4px 0 0; }
+.tag { font-size: .7rem; background: var(--header); color: var(--text); border-radius: 4px; padding: 1px 5px; margin-left: 6px; vertical-align: 1px; }
+.comment-form { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }

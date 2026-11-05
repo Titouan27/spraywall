@@ -80,6 +80,22 @@ service cloud.firestore {
       allow update: if false;
     }
 
+    // ---- Commentaires : publics ; supprimables par leur auteur ou par l'auteur du bloc ----
+    match /comments/{id} {
+      allow read: if true;
+      allow create: if hasName()
+        && request.resource.data.keys().hasOnly(['id', 'problemId', 'uid', 'user', 'text', 'createdAt'])
+        && request.resource.data.id == id
+        && request.resource.data.uid == uid() && request.resource.data.user == myName()
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 500
+        && request.resource.data.createdAt is int
+        && exists(/databases/$(database)/documents/problems/$(request.resource.data.problemId));
+      allow update: if false;
+      allow delete: if signedIn() && (resource.data.uid == uid()
+        || get(/databases/$(database)/documents/problems/$(resource.data.problemId)).data.authorUid == uid());
+    }
+
     // tout le reste est interdit
   }
 }

@@ -34,3 +34,14 @@ export interface Ascent {
 
 /** Bloc mis en projet : privé, un par grimpeur et par bloc (id = `${uid}_${problemId}`). */
 export interface Project { id: string; uid: string; problemId: string; createdAt: number }
+
+/** Commentaire sous un bloc. Public ; supprimable par son auteur ou par l'auteur du bloc. */
+export interface Comment {
+  id: string
+  problemId: string
+  uid: string
+  /** pseudo de l'auteur du commentaire (vérifié par les règles Firestore) */
+  user: string
+  text: string
+  createdAt: number
+}

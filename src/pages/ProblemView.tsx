@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import Wall, { ROLES, ROLE_COLOR, ROLE_LABEL } from '../Wall'
-import { canEdit, deleteAscent, deleteProblem, myAscent, saveAscent, setProject, signIn, useStore } from '../store'
+import { COMMENT_MAX, addComment, canEdit, deleteAscent, deleteComment, deleteProblem, myAscent, saveAscent, setProject, signIn, useStore } from '../store'
 import type { Me, Problem } from '../types'
 import { GRADES, feltGrade } from '../grades'
 import Grade from '../Grade'
@@ -51,6 +51,59 @@ function MyClimb({ p, me }: { p: Problem; me: Me }) {
   )
 }
 
+/** Date relative courte : « à l'instant », « il y a 5 min », « hier », sinon la date. */
+function ago(t: number) {
+  const s = (Date.now() - t) / 1000
+  if (s < 60) return "à l'instant"
+  if (s < 3600) return `il y a ${Math.floor(s / 60)} min`
+  if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`
+  if (s < 2 * 86400) return 'hier'
+  return new Date(t).toLocaleDateString('fr-FR')
+}
+
+/** Commentaires sous le bloc : lecture pour tous, écriture une fois connecté. */
+function Comments({ p, me }: { p: Problem; me: Me | null }) {
+  const { comments } = useStore()
+  const [text, setText] = useState('')
+  const [busy, setBusy] = useState(false)
+  const list = comments.filter(c => c.problemId === p.id).sort((a, b) => a.createdAt - b.createdAt)
+  const canDelete = (uid: string) => !!me && (uid === me.uid || p.authorUid === me.uid)
+
+  async function post(e: React.FormEvent) {
+    e.preventDefault()
+    if (!me || !text.trim()) return
+    setBusy(true)
+    const sent = text
+    setText('') // vidé tout de suite ; on remet le texte si l'envoi échoue
+    try { await addComment(me, p.id, sent) } catch (err) { setText(sent); alert('Erreur : ' + (err as Error).message) }
+    setBusy(false)
+  }
+  return (
+    <div className="card">
+      <h3>Commentaires ({list.length})</h3>
+      {!list.length && <p className="muted small">Aucun commentaire. Une méthode, un conseil, une variante ?</p>}
+      {list.map(c => (
+        <div key={c.id} className="comment">
+          <div className="row between">
+            <span><strong>{c.user}</strong>{c.uid === p.authorUid && <span className="tag">auteur</span>} <span className="muted small">· {ago(c.createdAt)}</span></span>
+            {canDelete(c.uid) && <button className="link" aria-label="Supprimer le commentaire" onClick={() => confirm('Supprimer ce commentaire ?') && deleteComment(c.id).catch(err => alert('Erreur : ' + err.message))}>✕</button>}
+          </div>
+          <p className="comment-text">{c.text}</p>
+        </div>
+      ))}
+      {me ? (
+        <form className="comment-form" onSubmit={post}>
+          <textarea rows={2} maxLength={COMMENT_MAX} value={text} onChange={e => setText(e.target.value)} placeholder="Écrire un commentaire…" />
+          <div className="row between">
+            <small className="muted">{text.length}/{COMMENT_MAX}</small>
+            <button className="primary" disabled={busy || !text.trim()}>Publier</button>
+          </div>
+        </form>
+      ) : <p className="small muted"><button className="link accent" onClick={signIn}>Connecte-toi</button> pour commenter.</p>}
+    </div>
+  )
+}
+
 export default function ProblemView({ id, me }: { id: string; me: Me | null }) {
   const { problems, ascents } = useStore()
   const p = problems.find(x => x.id === id)
@@ -84,10 +137,11 @@ export default function ProblemView({ id, me }: { id: string; me: Me | null }) {
           </div>
         ))}
       </div>
+      <Comments p={p} me={me} />
       {canEdit(p, me) && <div className="row">
         <a className="btn" href={'#/edit/' + p.id}>Modifier le bloc</a>
         <button className="danger" onClick={async () => {
-          if (confirm(`Supprimer « ${p.name} »${asc.length ? ` et ses ${asc.length} ascension(s)` : ''} ?`)) {
+          if (confirm(`Supprimer « ${p.name} » ? Ses ascensions et commentaires seront aussi supprimés.`)) {
             try { await deleteProblem(p.id); location.hash = '/' } catch (e) { alert('Erreur : ' + (e as Error).message) }
           }
         }}>Supprimer</button>

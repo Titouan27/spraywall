@@ -14,6 +14,7 @@ Base de blocs communautaire pour notre spray wall. Chacun crée des blocs en pos
 - **Ascensions** (connecté) : sur un bloc, « ✓ Je l'ai fait » avec sa cotation et la date. La **cotation ressentie** est la moyenne des cotations des grimpeurs ayant fait le bloc (auteur compris s'il le valide), arrondie à la cotation la plus proche. La cotation proposée par l'auteur reste affichée à côté.
 - **Projets** (connecté, privés) : « 🎯 Projet » sur un bloc ; il passe dans les ascensions une fois validé.
 - **Onglets** (connecté) : Blocs · Mes ascensions (stats et pyramide) · Mes projets.
+- **Commentaires** sous chaque bloc : lisibles par tous, publiés une fois connecté (500 caractères max). Chacun supprime les siens ; l'auteur d'un bloc peut supprimer ceux de son bloc. Pas de modification après publication.
 - **Connexion** : bouton « Se connecter » (Google). À la première connexion, on choisit un pseudo unique et définitif, affiché sur ses blocs.
 - **Droits** (vérifiés par les règles Firestore, pas seulement dans l'interface) : tout le monde lit ; un compte avec pseudo crée des blocs ; seul l'auteur modifie ou supprime son bloc.
 
