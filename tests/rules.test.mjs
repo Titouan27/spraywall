@@ -2,7 +2,7 @@
 // Lancer : npm run test:rules   (nécessite Java)
 import { initializeApp } from 'firebase/app'
 import { connectAuthEmulator, getAuth, GoogleAuthProvider, signInWithCredential } from 'firebase/auth'
-import { connectFirestoreEmulator, deleteDoc, doc, getDoc, getDocs, collection, getFirestore, setDoc, writeBatch } from 'firebase/firestore'
+import { connectFirestoreEmulator, deleteDoc, doc, getDoc, getDocs, collection, getFirestore, query, setDoc, where, writeBatch } from 'firebase/firestore'
 
 const PROJECT = 'demo-spraywall'
 await fetch(`http://127.0.0.1:8080/emulator/v1/projects/${PROJECT}/databases/(default)/documents`, { method: 'DELETE' })
@@ -67,6 +67,49 @@ await check('Alice ne peut pas changer la date de création', false, () => setDo
 await check('Alice ne peut pas donner son bloc à Bob', false, () => setDoc(doc(alice.db, 'problems', 'p1'), problem('p1', 'Bob', bob.uid)))
 await check('Alice modifie son bloc', true, () => setDoc(doc(alice.db, 'problems', 'p1'), problem('p1', 'Alice', alice.uid, { name: 'Renommé', updatedAt: 2 })))
 await check('Alice supprime son bloc', true, () => deleteDoc(doc(alice.db, 'problems', 'p1')))
+
+console.log('— Ascensions')
+await setDoc(doc(alice.db, 'problems', 'p2'), problem('p2', 'Alice', alice.uid))
+const asc = (who, name, pid, extra = {}) => ({ id: `${who.uid}_${pid}`, uid: who.uid, user: name, problemId: pid, grade: '6B', date: '2026-11-05', createdAt: 1, ...extra })
+await check('Bob valide le bloc d\'Alice', true, () => setDoc(doc(bob.db, 'ascents', `${bob.uid}_p2`), asc(bob, 'Bob', 'p2')))
+await check('Alice valide son propre bloc', true, () => setDoc(doc(alice.db, 'ascents', `${alice.uid}_p2`), asc(alice, 'Alice', 'p2', { grade: '6C' })))
+await check('Un visiteur lit les ascensions', true, () => getDocs(collection(guest.db, 'ascents')))
+await check('Bob modifie sa cotation', true, () => setDoc(doc(bob.db, 'ascents', `${bob.uid}_p2`), asc(bob, 'Bob', 'p2', { grade: '6B+' })))
+await check('Un visiteur ne peut pas valider', false, () => setDoc(doc(guest.db, 'ascents', 'x_p2'), { ...asc({ uid: 'x' }, 'X', 'p2') }))
+await check('Eve (sans pseudo) ne peut pas valider', false, () => setDoc(doc(eve.db, 'ascents', `${eve.uid}_p2`), asc(eve, 'Eve', 'p2')))
+await check('Bob ne peut pas valider au nom d\'Alice (pseudo)', false, () => setDoc(doc(bob.db, 'ascents', `${bob.uid}_p2`), asc(bob, 'Alice', 'p2')))
+await check('Bob ne peut pas écrire l\'ascension d\'Alice', false, () => setDoc(doc(bob.db, 'ascents', `${alice.uid}_p2`), asc(alice, 'Alice', 'p2')))
+await check('Identifiant d\'ascension incohérent refusé (doublon)', false, () => setDoc(doc(bob.db, 'ascents', 'autre'), { ...asc(bob, 'Bob', 'p2'), id: 'autre' }))
+await check('Cotation invalide refusée', false, () => setDoc(doc(bob.db, 'ascents', `${bob.uid}_p2`), asc(bob, 'Bob', 'p2', { grade: '9Z' })))
+await check('Date invalide refusée', false, () => setDoc(doc(bob.db, 'ascents', `${bob.uid}_p2`), asc(bob, 'Bob', 'p2', { date: 'hier' })))
+await check('Ascension sur un bloc inexistant refusée', false, () => setDoc(doc(bob.db, 'ascents', `${bob.uid}_nope`), asc(bob, 'Bob', 'nope')))
+await check('Bob ne peut pas supprimer l\'ascension d\'Alice', false, () => deleteDoc(doc(bob.db, 'ascents', `${alice.uid}_p2`)))
+
+console.log('— Projets')
+const proj = (who, pid) => ({ id: `${who.uid}_${pid}`, uid: who.uid, problemId: pid, createdAt: 1 })
+await check('Bob met un bloc en projet', true, () => setDoc(doc(bob.db, 'projects', `${bob.uid}_p2`), proj(bob, 'p2')))
+await check('Bob lit ses projets', true, () => getDocs(query(collection(bob.db, 'projects'), where('uid', '==', bob.uid))))
+await check('Alice ne peut pas lire les projets de Bob', false, () => getDoc(doc(alice.db, 'projects', `${bob.uid}_p2`)))
+await check('Alice ne peut pas lister tous les projets', false, () => getDocs(collection(alice.db, 'projects')))
+await check('Un visiteur ne peut pas lire les projets', false, () => getDocs(query(collection(guest.db, 'projects'), where('uid', '==', bob.uid))))
+await check('Alice ne peut pas créer un projet pour Bob', false, () => setDoc(doc(alice.db, 'projects', `${bob.uid}_p2`), proj(bob, 'p2')))
+await check('Alice ne peut pas supprimer le projet de Bob', false, () => deleteDoc(doc(alice.db, 'projects', `${bob.uid}_p2`)))
+await check('Projet sur un bloc inexistant refusé', false, () => setDoc(doc(bob.db, 'projects', `${bob.uid}_nope`), proj(bob, 'nope')))
+await check('Valider retire du projet (même opération)', true, async () => {
+  const b = writeBatch(bob.db); b.set(doc(bob.db, 'ascents', `${bob.uid}_p2`), asc(bob, 'Bob', 'p2')); b.delete(doc(bob.db, 'projects', `${bob.uid}_p2`)); await b.commit()
+})
+await check('Bob retire sa propre ascension', true, () => deleteDoc(doc(bob.db, 'ascents', `${bob.uid}_p2`)))
+
+console.log('— Suppression d\'un bloc avec ses ascensions')
+await setDoc(doc(bob.db, 'ascents', `${bob.uid}_p2`), asc(bob, 'Bob', 'p2'))
+await check('Bob ne peut pas supprimer le bloc d\'Alice avec ses ascensions', false, async () => {
+  const b = writeBatch(bob.db); b.delete(doc(bob.db, 'ascents', `${alice.uid}_p2`)); b.delete(doc(bob.db, 'problems', 'p2')); await b.commit()
+})
+await check('Alice supprime son bloc et toutes ses ascensions', true, async () => {
+  const b = writeBatch(alice.db)
+  b.delete(doc(alice.db, 'ascents', `${alice.uid}_p2`)); b.delete(doc(alice.db, 'ascents', `${bob.uid}_p2`)); b.delete(doc(alice.db, 'problems', 'p2'))
+  await b.commit()
+})
 
 console.log(`\n${n - failed}/${n} tests OK`)
 process.exit(failed ? 1 : 0)

@@ -17,3 +17,20 @@ export interface Problem {
 
 /** Utilisateur connecté */
 export interface Me { uid: string; name: string }
+
+/** Ascension : une par grimpeur et par bloc (id = `${uid}_${problemId}`). Publique (sert à la cotation ressentie). */
+export interface Ascent {
+  id: string
+  uid: string
+  /** pseudo du grimpeur (vérifié par les règles Firestore) */
+  user: string
+  problemId: string
+  /** cotation donnée par le grimpeur */
+  grade: string
+  /** date de l'ascension, AAAA-MM-JJ */
+  date: string
+  createdAt: number
+}
+
+/** Bloc mis en projet : privé, un par grimpeur et par bloc (id = `${uid}_${problemId}`). */
+export interface Project { id: string; uid: string; problemId: string; createdAt: number }

@@ -5,13 +5,17 @@ import {
 } from 'firebase/auth'
 import {
   connectFirestoreEmulator, initializeFirestore, persistentLocalCache, collection, doc, onSnapshot, setDoc, deleteDoc, getDoc, writeBatch,
-  type Firestore,
+  query, where, type Firestore, type Unsubscribe,
 } from 'firebase/firestore'
 import { firebaseConfig } from './config'
-import type { Me, Problem } from './types'
+import type { Ascent, Me, Problem, Project } from './types'
 
 interface State {
   problems: Problem[]
+  /** toutes les ascensions (publiques) */
+  ascents: Ascent[]
+  /** mes projets (privés) */
+  projects: Project[]
   ready: boolean
   /** utilisateur connecté : undefined = vérification en cours, null = visiteur (lecture seule) */
   me: Me | null | undefined
@@ -20,7 +24,7 @@ interface State {
   error?: string
 }
 
-let state: State = { problems: [], ready: false, me: undefined, needsName: false }
+let state: State = { problems: [], ascents: [], projects: [], ready: false, me: undefined, needsName: false }
 const listeners = new Set<() => void>()
 function set(patch: Partial<State>) { state = { ...state, ...patch }; listeners.forEach(l => l()) }
 export function useStore() {
@@ -50,12 +54,20 @@ if (config) {
   if (EMULATOR) { connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true }); connectFirestoreEmulator(db, '127.0.0.1', 8080) }
 
   // Les blocs sont lisibles par tout le monde, connecté ou non
-  onSnapshot(collection(db, 'problems'),
-    s => set({ problems: s.docs.map(d => d.data() as Problem), ready: true, error: undefined }),
-    e => set({ error: e.message, ready: true }))
+  // Blocs et ascensions sont lisibles par tout le monde ; « ready » quand les deux sont chargés
+  const got = new Set<string>()
+  const loaded = (k: string) => { got.add(k); if (got.size === 2) set({ ready: true }) }
+  const fail = (e: Error) => set({ error: e.message, ready: true })
+  onSnapshot(collection(db, 'problems'), s => { set({ problems: s.docs.map(d => d.data() as Problem), error: undefined }); loaded('p') }, fail)
+  onSnapshot(collection(db, 'ascents'), s => { set({ ascents: s.docs.map(d => d.data() as Ascent) }); loaded('a') }, fail)
 
+  // Mes projets : privés, on n'écoute que les miens
+  let unsubProjects: Unsubscribe | null = null
   onAuthStateChanged(auth, async u => {
+    unsubProjects?.(); unsubProjects = null; set({ projects: [] })
     if (!u) return set({ me: null, needsName: false })
+    unsubProjects = onSnapshot(query(collection(db!, 'projects'), where('uid', '==', u.uid)),
+      s => set({ projects: s.docs.map(d => d.data() as Project) }), fail)
     try {
       const profile = await getDoc(doc(db!, 'users', u.uid))
       if (profile.exists()) set({ me: { uid: u.uid, name: profile.data().name }, needsName: false })
@@ -64,13 +76,14 @@ if (config) {
   })
 } else {
   // ---------- Mode démo : stockage dans le navigateur, connexion simulée ----------
-  let problems: Problem[] = []
-  let me: Me | null = null
-  try { problems = JSON.parse(localStorage.getItem('sw_problems') || '[]'); me = JSON.parse(localStorage.getItem('sw_demo_me') || 'null') } catch { /* ignore */ }
-  set({ problems, me, ready: true })
+  const load = <T,>(k: string, def: T): T => { try { const v = localStorage.getItem('sw_' + k); return v ? JSON.parse(v) : def } catch { return def } }
+  set({ problems: load('problems', []), ascents: load('ascents', []), projects: load('projects', []), me: load('demo_me', null), ready: true })
 }
 function persistLocal() {
-  try { localStorage.setItem('sw_problems', JSON.stringify(state.problems)); localStorage.setItem('sw_demo_me', JSON.stringify(state.me ?? null)) } catch { /* ignore */ }
+  try {
+    localStorage.setItem('sw_problems', JSON.stringify(state.problems)); localStorage.setItem('sw_demo_me', JSON.stringify(state.me ?? null))
+    localStorage.setItem('sw_ascents', JSON.stringify(state.ascents)); localStorage.setItem('sw_projects', JSON.stringify(state.projects))
+  } catch { /* ignore */ }
 }
 
 // ---------- Connexion / déconnexion ----------
@@ -119,7 +132,47 @@ export async function saveProblem(p: Problem) {
   if (db) await setDoc(doc(db, 'problems', p.id), p)
   else { set({ problems: [...state.problems.filter(x => x.id !== p.id), p] }); persistLocal() }
 }
+/** Supprime un bloc et, dans la même opération, toutes ses ascensions et mon éventuel projet. */
 export async function deleteProblem(id: string) {
-  if (db) await deleteDoc(doc(db, 'problems', id))
-  else { set({ problems: state.problems.filter(p => p.id !== id) }); persistLocal() }
+  if (db) {
+    const b = writeBatch(db)
+    state.ascents.filter(a => a.problemId === id).forEach(a => b.delete(doc(db!, 'ascents', a.id)))
+    state.projects.filter(p => p.problemId === id).forEach(p => b.delete(doc(db!, 'projects', p.id)))
+    b.delete(doc(db, 'problems', id))
+    await b.commit()
+  } else {
+    set({ problems: state.problems.filter(p => p.id !== id), ascents: state.ascents.filter(a => a.problemId !== id), projects: state.projects.filter(p => p.problemId !== id) })
+    persistLocal()
+  }
+}
+
+// ---------- Ascensions & projets ----------
+const key = (uid: string, problemId: string) => `${uid}_${problemId}`
+export const myAscent = (problemId: string, me: Me | null | undefined) => me ? state.ascents.find(a => a.id === key(me.uid, problemId)) : undefined
+
+/** Enregistre (ou met à jour) mon ascension ; retire le bloc de mes projets s'il y était. */
+export async function saveAscent(me: Me, problemId: string, grade: string, date: string) {
+  const id = key(me.uid, problemId)
+  const prev = state.ascents.find(a => a.id === id)
+  const a: Ascent = { id, uid: me.uid, user: me.name, problemId, grade, date, createdAt: prev?.createdAt ?? Date.now() }
+  const inProjects = state.projects.some(p => p.id === id)
+  if (db) {
+    const b = writeBatch(db)
+    b.set(doc(db, 'ascents', id), a)
+    if (inProjects) b.delete(doc(db, 'projects', id))
+    await b.commit()
+  } else {
+    set({ ascents: [...state.ascents.filter(x => x.id !== id), a], projects: state.projects.filter(p => p.id !== id) }); persistLocal()
+  }
+}
+export async function deleteAscent(me: Me, problemId: string) {
+  const id = key(me.uid, problemId)
+  if (db) await deleteDoc(doc(db, 'ascents', id))
+  else { set({ ascents: state.ascents.filter(a => a.id !== id) }); persistLocal() }
+}
+export async function setProject(me: Me, problemId: string, on: boolean) {
+  const id = key(me.uid, problemId)
+  const p: Project = { id, uid: me.uid, problemId, createdAt: Date.now() }
+  if (db) await (on ? setDoc(doc(db, 'projects', id), p) : deleteDoc(doc(db, 'projects', id)))
+  else { set({ projects: on ? [...state.projects.filter(x => x.id !== id), p] : state.projects.filter(x => x.id !== id) }); persistLocal() }
 }

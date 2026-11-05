@@ -75,3 +75,18 @@ header nav .login-btn { padding: 6px 12px; }
 .link.accent { color: var(--accent); padding: 0; font-weight: 600; }
 .warn { color: #fcd34d; margin: 0; }
 header nav .user { color: var(--text); background: var(--card); padding: 6px 10px; border-radius: 8px; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.with-tabs { padding-bottom: calc(84px + env(safe-area-inset-bottom)); }
+.tabbar { position: fixed; bottom: 0; left: 0; right: 0; z-index: 10; display: flex; background: var(--card); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+.tabbar a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; color: var(--muted); font-size: .75rem; }
+.tabbar a span { font-size: 1.2rem; line-height: 1; }
+.tabbar a.on { color: var(--accent); }
+.grades-line { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin: 4px 0 8px; }
+.climb-actions .grow-btn { flex: 1; }
+.done-card { border-color: #22c55e88; }
+.ascent-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+.badge.done { color: #22c55e; }
+.stats { display: flex; gap: 12px; }
+.stats > div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 1.4rem; }
+.pyramid { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.bar-row { display: flex; gap: 8px; align-items: center; }
+.bar { font-size: .75rem; font-weight: 700; padding: 2px 6px; border-radius: 4px; min-width: 22px; }

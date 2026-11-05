@@ -3,6 +3,8 @@ import { claimName, isDemo, logout, signIn, useStore } from './store'
 import ProblemList from './pages/ProblemList'
 import ProblemView from './pages/ProblemView'
 import ProblemEditor from './pages/ProblemEditor'
+import MyAscents from './pages/MyAscents'
+import MyProjects from './pages/MyProjects'
 
 function useHash() {
   const [h, setH] = useState(location.hash.slice(1) || '/')
@@ -50,6 +52,8 @@ export default function App() {
   else if (page === 'p' && id) body = <ProblemView id={id} me={user} />
   else if (page === 'new') body = user ? <ProblemEditor key="new" me={user} /> : <NeedLogin what="créer un bloc" />
   else if (page === 'edit' && id) body = user ? <ProblemEditor key={id} me={user} id={id} /> : <NeedLogin what="modifier un bloc" />
+  else if (page === 'ascents') body = user ? <MyAscents me={user} /> : <NeedLogin what="voir tes ascensions" />
+  else if (page === 'projects') body = user ? <MyProjects /> : <NeedLogin what="voir tes projets" />
   else body = <ProblemList me={user} />
 
   return (
@@ -68,7 +72,14 @@ export default function App() {
       </header>
       {isDemo && <div className="banner">Mode démo : les blocs restent dans ce navigateur (Firebase non configuré).</div>}
       {error && <div className="banner err">Erreur : {error}</div>}
-      <main>{body}</main>
+      <main className={user ? 'with-tabs' : ''}>{body}</main>
+      {user && (
+        <nav className="tabbar">
+          <a href="#/" className={!page || page === 'p' ? 'on' : ''}><span>🧗</span>Blocs</a>
+          <a href="#/ascents" className={page === 'ascents' ? 'on' : ''}><span>✓</span>Mes ascensions</a>
+          <a href="#/projects" className={page === 'projects' ? 'on' : ''}><span>🎯</span>Mes projets</a>
+        </nav>
+      )}
     </>
   )
 }

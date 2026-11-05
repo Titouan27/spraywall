@@ -14,3 +14,13 @@ export function gradeColors(g: string) {
   const i = gradeIndex(g)
   return GRADE_LEVELS.find(l => i <= gradeIndex(l.upTo)) ?? GRADE_LEVELS[GRADE_LEVELS.length - 1]
 }
+
+/**
+ * Cotation ressentie : moyenne des rangs des cotations données, arrondie au rang le plus proche
+ * (ex. 6B+, 6C, 6C → rangs 8, 9, 9 → 8,67 → 9 → 6C). null si aucune cotation.
+ */
+export function feltGrade(grades: string[]): string | null {
+  const idx = grades.map(gradeIndex).filter(i => i >= 0)
+  if (!idx.length) return null
+  return GRADES[Math.round(idx.reduce((a, b) => a + b, 0) / idx.length)]
+}

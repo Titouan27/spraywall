@@ -10,7 +10,10 @@ Base de blocs communautaire pour notre spray wall. Chacun crée des blocs en pos
 ## Fonctionnement
 - **Créer un bloc** (« ＋ Bloc ») : choisir le type de prise — **Départ** (vert), **Main** (bleu), **Pied** (jaune, pointillés), **Top** (rouge) — et la taille, puis toucher les prises sur la photo pour poser des cercles. Toucher un cercle permet de changer son type, sa taille ou de le retirer. Zoom : pincer / molette.
 - Chaque bloc a un nom, une cotation (Fontainebleau), une description et l'auteur (pseudo).
-- **Liste** : recherche par nom/auteur, filtre de cotation, tri par date ou cotation.
+- **Liste** : recherche par nom/auteur, filtre sur la cotation proposée, tri par date, cotation ou popularité ; badges ✓ (fait) et 🎯 (projet).
+- **Ascensions** (connecté) : sur un bloc, « ✓ Je l'ai fait » avec sa cotation et la date. La **cotation ressentie** est la moyenne des cotations des grimpeurs ayant fait le bloc (auteur compris s'il le valide), arrondie à la cotation la plus proche. La cotation proposée par l'auteur reste affichée à côté.
+- **Projets** (connecté, privés) : « 🎯 Projet » sur un bloc ; il passe dans les ascensions une fois validé.
+- **Onglets** (connecté) : Blocs · Mes ascensions (stats et pyramide) · Mes projets.
 - **Connexion** : bouton « Se connecter » (Google). À la première connexion, on choisit un pseudo unique et définitif, affiché sur ses blocs.
 - **Droits** (vérifiés par les règles Firestore, pas seulement dans l'interface) : tout le monde lit ; un compte avec pseudo crée des blocs ; seul l'auteur modifie ou supprime son bloc.
 
